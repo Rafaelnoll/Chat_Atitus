@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Button } from "./components/button"
 import { Input } from "./components/input"
 import { ScrollArea } from "./components/scroll-area"
@@ -27,6 +27,8 @@ export default function App() {
   const [currentChannel, setCurrentChannel] = useState('General')
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
+  const lastMessageRef = useRef<HTMLElement | null>(null);
+
   const channels: Channel[] = [
     { id: 1, name: 'General' },
     { id: 2, name: 'Project Alpha' },
@@ -34,6 +36,8 @@ export default function App() {
   ]
 
   const handleSendMessage = () => {
+    const lastMessageElement = lastMessageRef.current;
+
     if (inputMessage.trim() !== '') {
       const newMessage: Message = {
         id: messages.length + 1,
@@ -43,6 +47,11 @@ export default function App() {
       }
       setMessages([...messages, newMessage])
       setInputMessage('')
+
+      if(lastMessageElement){
+        lastMessageElement.scrollIntoView({ behavior: 'smooth' });
+      }
+
     }
   }
 
@@ -85,8 +94,8 @@ export default function App() {
 
         {/* Messages */}
         <ScrollArea className="flex-1 p-4">
-          {messages.map((message) => (
-            <div key={message.id} className="mb-4">
+          {messages.map((message, index) => (
+            <div key={message.id} className="mb-4" {...(index === messages.length - 1 ? { ref: lastMessageRef } : {})}>
               <div className="flex items-start">
                 <Avatar className="w-8 h-8 mr-2 text-slate-900 shadow">
                   <AvatarFallback>{message.sender[0]}</AvatarFallback>
