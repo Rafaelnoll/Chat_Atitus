@@ -24,7 +24,7 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const lastMessageRef = useRef<HTMLElement | null>(null);
-  const fileInputRef = useRef<HTMLElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const channels: Channel[] = [
     { id: 1, name: 'General' },
