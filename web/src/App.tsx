@@ -1,9 +1,11 @@
-import { ChangeEvent, useRef, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Button } from "./components/button"
 import { Input } from "./components/input"
 import { ScrollArea } from "./components/scroll-area"
 import { Avatar, AvatarFallback } from "./components/avatar"
 import { Send, Paperclip, Menu } from 'lucide-react'
+import io from 'socket.io-client';
+import useSocketIo from './hooks/useSocketIo'
 
 interface Message {
   id: number
@@ -18,10 +20,10 @@ interface Channel {
 }
 
 export default function App() {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Hello team! How's the project coming along?", sender: 'John Doe', timestamp: '10:30 AM' },
-    { id: 2, text: "We're making good progress. The design phase is almost complete.", sender: 'Jane Smith', timestamp: '10:32 AM' },
-  ])
+
+  const { send, onMessage } = useSocketIo<Message>({ url: 'ws://192.168.0.115:5000' });
+
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('')
   const [currentChannel, setCurrentChannel] = useState('General')
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -45,7 +47,7 @@ export default function App() {
         sender: 'You',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
-      setMessages([...messages, newMessage])
+      send(newMessage);
       setInputMessage('')
 
       if(lastMessageElement){
@@ -67,6 +69,14 @@ export default function App() {
       const [file] = event?.target?.files || [];
       console.log("File", file)
   };
+
+  useEffect(() => {
+
+    onMessage((message) => {
+      setMessages(prevState => [...prevState, message]);
+    });
+
+  }, [onMessage]);
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
