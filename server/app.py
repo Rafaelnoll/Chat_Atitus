@@ -1,9 +1,47 @@
-from flask import Flask
+import uuid
+from flask import Flask, jsonify, request, send_from_directory
 from flask_socketio import SocketIO, send
+from flask_cors import CORS
+from os import makedirs, path
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
+
+UPLOAD_FOLDER = 'uploads'
+makedirs(UPLOAD_FOLDER, exist_ok=True)  # Cria a pasta de arquivos caso ela não exista
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "Nenhum arquivo enviado"}), 400
+
+        file = request.files['file']
+       
+        if file.filename == '':
+            return jsonify({"error": "Nenhum arquivo selecionado"}), 400
+        
+        uuid_filename = str(uuid.uuid4()) + file.filename
+        
+        file_path = path.join(UPLOAD_FOLDER, uuid_filename)
+        file.save(file_path)
+
+        fileObject = {
+            "url": f"http://localhost:5000/uploads/{uuid_filename}",
+            "type": file.mimetype,
+            "name": file.filename
+        }
+
+        return jsonify({"message": "Arquivo salvo com sucesso!", "fileData": fileObject}), 200
+    except:
+        return jsonify({"error": "Erro ao enviar mensagem"}), 500
+        
 
 @socketio.on('message')
 def handle_message(msg):

@@ -2,17 +2,11 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { Button } from "./components/button"
 import { Input } from "./components/input"
 import { ScrollArea } from "./components/scroll-area"
-import { Avatar, AvatarFallback } from "./components/avatar"
 import { Send, Paperclip, Menu } from 'lucide-react'
-import io from 'socket.io-client';
 import useSocketIo from './hooks/useSocketIo'
-
-interface Message {
-  id: number
-  text: string
-  sender: string
-  timestamp: string
-}
+import { FilePreview } from './components/file-preview'
+import { IMessage } from './types/IMessage'
+import { MessageBubble } from './components/message-bubble'
 
 interface Channel {
   id: number
@@ -21,12 +15,13 @@ interface Channel {
 
 export default function App() {
 
-  const { send, onMessage } = useSocketIo<Message>({ url: 'ws://192.168.0.115:5000' });
+  const { send, onMessage } = useSocketIo<IMessage>({ url: 'ws://localhost:5000' });
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('')
   const [currentChannel, setCurrentChannel] = useState('General')
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const lastMessageRef = useRef<HTMLElement | null>(null);
   const fileInputRef = useRef<HTMLElement | null>(null);
@@ -37,17 +32,37 @@ export default function App() {
     { id: 3, name: 'Random' },
   ]
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     const lastMessageElement = lastMessageRef.current;
 
-    if (inputMessage.trim() !== '') {
-      const newMessage: Message = {
-        id: messages.length + 1,
-        text: inputMessage,
-        sender: 'You',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    const newMessage: IMessage = {
+      id: messages.length + 1,
+      text: inputMessage,
+      sender: 'You',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    }
+
+    if(selectedFile){
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      const fileData = data?.fileData || {};
+
+      if(fileData){
+        newMessage.fileData = fileData;
       }
+    }
+
+    if (inputMessage.trim() !== '' || selectedFile) { 
       send(newMessage);
+      setSelectedFile(null);
       setInputMessage('')
 
       if(lastMessageElement){
@@ -65,9 +80,13 @@ export default function App() {
     }
   }
 
-  const onUploadFile = (event: ChangeEvent<HTMLInputElement>) => {
+  const onUploadFile = async (event: ChangeEvent<HTMLInputElement>) => {
       const [file] = event?.target?.files || [];
-      console.log("File", file)
+      
+      if(file){
+        setSelectedFile(file);
+      }
+
   };
 
   useEffect(() => {
@@ -114,58 +133,49 @@ export default function App() {
           </Button>
           <h1 className="text-xl text-slate-950 font-semibold">#{currentChannel}</h1>
         </header>
-
+        
         {/* Messages */}
         <ScrollArea className="flex-1 p-4">
           {messages.map((message, index) => (
-            <div key={message.id} className="mb-4" {...(index === messages.length - 1 ? { ref: lastMessageRef } : {})}>
-              <div className="flex items-start">
-                <Avatar className="w-8 h-8 mr-2 text-slate-900 shadow">
-                  <AvatarFallback>{message.sender[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center mb-1">
-                    <span className="font-semibold mr-2 text-slate-950">{message.sender}</span>
-                    <span className="text-xs text-gray-500">{message.timestamp}</span>
-                  </div>
-                  <div className={`p-3 rounded-2xl ${message.sender === 'You' ? 'bg-indigo-100 dark:bg-indigo-900 text-slate-950 ml-auto' : 'bg-gray-100 text-slate-950 dark:bg-gray-700'}`}>
-                    <p>{message.text}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MessageBubble key={message.id} message={message} {...(index === messages.length - 1 ? { elementRef: lastMessageRef } : {})} />
           ))}
         </ScrollArea>
 
         {/* Message Input */}
         <div className="bg-white dark:bg-gray-800 p-4 border-t dark:border-gray-700">
-          <div className="flex items-end space-x-2">
-            <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-2xl p-2">
-              <Input
-                type="text"
-                placeholder="Escreva uma mensagem..."
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSendMessage()
-                  }
-                }}
-                className="bg-transparent text-slate-900 border-none focus:ring-0 p-2"
-              />
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex space-x-2">
-                  <Button onClick={handleOpenFilePicker} variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-full">
-                    <Paperclip className="h-4 w-4" />
+          <div className="flex flex-col space-y-2">
+            {selectedFile && (
+              <FilePreview file={selectedFile} onRemove={() => setSelectedFile(null)} />
+            )}
+            
+            <div className="flex items-end space-x-2">
+              <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-2xl p-2">
+                <Input
+                  type="text"
+                  placeholder="Escreva uma mensagem..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSendMessage()
+                    }
+                  }}
+                  className="bg-transparent text-slate-900 border-none focus:ring-0 p-2"
+                />
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex space-x-2">
+                    <Button onClick={handleOpenFilePicker} variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-full">
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <input onChange={onUploadFile} ref={fileInputRef} type='file' className='opacity-0'></input>
+                  </div>
+                  <Button onClick={handleSendMessage} size="sm" className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-full">
+                    <Send className="h-4 w-4" />
                   </Button>
-                  <input onChange={onUploadFile} ref={fileInputRef} type='file' className='opacity-0'></input>
                 </div>
-                <Button onClick={handleSendMessage} size="sm" className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-full">
-                  <Send className="h-4 w-4" />
-                </Button>
               </div>
             </div>
-          </div>
+          </div>          
         </div>
       </div>
     </div>
