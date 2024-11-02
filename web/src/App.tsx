@@ -1,10 +1,9 @@
-import { useRef, useState } from 'react'
+import { ChangeEvent, useRef, useState } from 'react'
 import { Button } from "./components/button"
 import { Input } from "./components/input"
 import { ScrollArea } from "./components/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "./components/avatar"
-import { Separator } from "./components/separator"
-import { Bold, Italic, List, Send, Smile, Paperclip, Menu } from 'lucide-react'
+import { Avatar, AvatarFallback } from "./components/avatar"
+import { Send, Paperclip, Menu } from 'lucide-react'
 
 interface Message {
   id: number
@@ -28,6 +27,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   const lastMessageRef = useRef<HTMLElement | null>(null);
+  const fileInputRef = useRef<HTMLElement | null>(null);
 
   const channels: Channel[] = [
     { id: 1, name: 'General' },
@@ -54,6 +54,19 @@ export default function App() {
 
     }
   }
+
+  const handleOpenFilePicker = () => {
+    const fileInput = fileInputRef.current;
+
+    if(fileInput){
+      fileInput.click();
+    }
+  }
+
+  const onUploadFile = (event: ChangeEvent<HTMLInputElement>) => {
+      const [file] = event?.target?.files || [];
+      console.log("File", file)
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
@@ -132,9 +145,10 @@ export default function App() {
               />
               <div className="flex items-center justify-between mt-2">
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-full">
+                  <Button onClick={handleOpenFilePicker} variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-full">
                     <Paperclip className="h-4 w-4" />
                   </Button>
+                  <input onChange={onUploadFile} ref={fileInputRef} type='file' className='opacity-0'></input>
                 </div>
                 <Button onClick={handleSendMessage} size="sm" className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-full">
                   <Send className="h-4 w-4" />
