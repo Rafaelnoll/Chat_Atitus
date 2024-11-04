@@ -13,13 +13,13 @@ import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function LoginScreen() {
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle login logic here
-    console.log("'Login attempted'", { email, password });
+    console.log("'Login attempted'", { name, password });
   };
 
   return (
@@ -32,13 +32,13 @@ export function LoginScreen() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="email">E-Mail</Label>
+            <Label htmlFor="name">Nome</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="m@exemplo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="name"
+              type="name"
+              placeholder="Fulano silva"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="grid gap-2">

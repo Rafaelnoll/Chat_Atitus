@@ -13,14 +13,29 @@ import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function RegisterScreen() {
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle login logic here
-    console.log("'Login attempted'", { email, password });
+  const handleRegister = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/register", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          password,
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      const userToken = data.token;
+      localStorage.setItem("user-token", userToken);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -33,13 +48,13 @@ export function RegisterScreen() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="email">E-Mail</Label>
+            <Label htmlFor="name">Nome</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="m@exemplo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="name"
+              type="name"
+              placeholder="Fulano Silva"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="grid gap-2">
