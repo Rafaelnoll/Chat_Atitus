@@ -12,6 +12,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 UPLOAD_FOLDER = 'uploads'
 makedirs(UPLOAD_FOLDER, exist_ok=True)  # Cria a pasta de arquivos caso ela não exista
 
+users = []
+
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
@@ -41,7 +43,21 @@ def upload_file():
         return jsonify({"message": "Arquivo salvo com sucesso!", "fileData": fileObject}), 200
     except:
         return jsonify({"error": "Erro ao enviar mensagem"}), 500
-        
+
+@app.route('/login', methods = ['POST'])
+def inputLogin():
+    login = request.json
+    return login
+
+@app.route('/register',methods= ['POST'])
+def user():
+    data = request.get_json()
+    user = {
+        'name': data['name'],
+        'password': data['password']
+        }
+    users.append(user)
+    return users
 
 @socketio.on('message')
 def handle_message(msg):
