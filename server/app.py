@@ -60,7 +60,7 @@ def user():
     userToken = uuid4()
     users[userToken] = user
 
-    return jsonify({ "message": "Usuário Criado", "token": userToken }), 200
+    return jsonify({ "message": "Usuário Criado", "token": userToken, "user": { "name": user['name']} }), 200
 
 @socketio.on('message')
 def handle_message(msg):

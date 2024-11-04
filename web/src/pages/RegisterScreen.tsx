@@ -11,31 +11,17 @@ import {
 import { Label } from "../components/label";
 import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
+import useUser from "../hooks/useUser";
 
 export function RegisterScreen() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleRegister = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/register", {
-        method: "POST",
-        body: JSON.stringify({
-          name,
-          password,
-        }),
-        headers: {
-          "content-type": "application/json",
-        },
-      });
+  const { register } = useUser();
 
-      const data = await response.json();
-      const userToken = data.token;
-      localStorage.setItem("user-token", userToken);
-    } catch (error) {
-      console.log(error);
-    }
+  const handleRegister = () => {
+    register(name, password);
   };
 
   return (
