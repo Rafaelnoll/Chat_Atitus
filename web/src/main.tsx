@@ -1,16 +1,18 @@
 import { createRoot } from "react-dom/client";
 import { FluentProvider, webDarkTheme } from "@fluentui/react-components";
-import { RouterProvider } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import "./index.css";
-import { routes } from "./routes.tsx";
 import { UserProvider } from "./contexts/UserContext.tsx";
+import RoutesComponents from "./Routes.tsx";
 
 const root = createRoot(document.getElementById("root")!);
 
 root.render(
   <FluentProvider className="h-100" theme={webDarkTheme}>
-    <UserProvider>
-      <RouterProvider router={routes} />
-    </UserProvider>
+    <BrowserRouter>
+      <UserProvider>
+        <RoutesComponents />
+      </UserProvider>
+    </BrowserRouter>
   </FluentProvider>
 );

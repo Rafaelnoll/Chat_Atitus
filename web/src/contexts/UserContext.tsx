@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface IUser {
   name: string;
@@ -23,6 +24,7 @@ export const UserContext = createContext<IContext>({
 
 export const UserProvider = ({ children }: IProps) => {
   const [user, setUser] = useState<IUser | null>(null);
+  const navigate = useNavigate();
 
   function handleLogin(name: string, password: string) {
     console.log(name, password);
@@ -42,10 +44,14 @@ export const UserProvider = ({ children }: IProps) => {
       });
 
       const data = await response.json();
-      const userToken = data.token;
-      const user = data.user;
-      setUser(user);
-      localStorage.setItem("user-token", userToken);
+      const userToken = data?.token;
+      const user = data?.user;
+
+      if (user && userToken) {
+        setUser(user);
+        localStorage.setItem("user-token", userToken);
+        navigate("/");
+      }
     } catch (error) {
       console.log(error);
     }
