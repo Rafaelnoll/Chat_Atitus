@@ -11,15 +11,17 @@ import {
 import { Label } from "../components/label";
 import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
+import useUser from "../hooks/useUser";
 
 export function LoginScreen() {
+  const { login } = useUser();
+
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("'Login attempted'", { name, password });
+    login(name, password);
   };
 
   return (

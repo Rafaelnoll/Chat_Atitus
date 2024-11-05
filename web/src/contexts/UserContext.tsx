@@ -26,10 +26,6 @@ export const UserProvider = ({ children }: IProps) => {
   const [user, setUser] = useState<IUser | null>(null);
   const navigate = useNavigate();
 
-  function handleLogin(name: string, password: string) {
-    console.log(name, password);
-  }
-
   async function handleRegister(name: string, password: string) {
     try {
       const response = await fetch("http://localhost:5000/register", {
@@ -50,6 +46,32 @@ export const UserProvider = ({ children }: IProps) => {
       if (user && userToken) {
         setUser(user);
         localStorage.setItem("user-token", userToken);
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function handleLogin(name: string, password: string) {
+    try {
+      const response = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          password,
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      const user = data?.user;
+
+      if (user) {
+        setUser(user);
+        localStorage.setItem("user-token", user.token);
         navigate("/");
       }
     } catch (error) {

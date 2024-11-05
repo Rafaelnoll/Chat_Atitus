@@ -12,7 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 UPLOAD_FOLDER = 'uploads'
 makedirs(UPLOAD_FOLDER, exist_ok=True)  # Cria a pasta de arquivos caso ela não exista
 
-users = {}
+users = []
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -46,8 +46,23 @@ def upload_file():
 
 @app.route('/login', methods = ['POST'])
 def inputLogin():
-    login = request.json
-    return login
+    data = request.get_json()
+
+    name = data['name']
+    password = data['password']
+
+    userFound = None
+
+    for user in users:
+        if(user['name'] == name and user['password'] == password):
+            userFound = user
+
+    if(userFound):
+        del user['password']
+
+        return jsonify({ "message": "Usuário Encontrado", "user": user }), 200
+
+    return jsonify({ "error": "Nome ou senha incorretas", }), 403
 
 @app.route('/register',methods= ['POST'])
 def user():
@@ -58,7 +73,8 @@ def user():
     }
     
     userToken = uuid4()
-    users[userToken] = user
+    user['token'] = userToken
+    users.append(user)
 
     return jsonify({ "message": "Usuário Criado", "token": userToken, "user": { "name": user['name']} }), 200
 
