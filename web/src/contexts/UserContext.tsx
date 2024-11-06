@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useState } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface IUser {
@@ -79,6 +79,34 @@ export const UserProvider = ({ children }: IProps) => {
       console.log(error);
     }
   }
+
+  useEffect(() => {
+    const tokenInLocalStorage = localStorage.getItem("user-token");
+
+    async function resumeLogin() {
+      try {
+        if (!tokenInLocalStorage) return;
+
+        const response = await fetch("http://localhost:5000/login/resume", {
+          method: "GET",
+          headers: {
+            "content-type": "application/json",
+            authorization: tokenInLocalStorage,
+          },
+        });
+
+        const data = await response.json();
+        const user = data?.user;
+        const userToken = data?.token;
+
+        setUser({ ...user, token: userToken });
+      } catch {
+        console.log("asdassa");
+      }
+    }
+
+    resumeLogin();
+  }, []);
 
   return (
     <UserContext.Provider

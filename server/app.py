@@ -64,6 +64,22 @@ def inputLogin():
 
     return jsonify({ "error": "Nome ou senha incorretas", }), 403
 
+@app.route('/login/resume', methods = ['GET'])
+def resumeLogin():
+    authorization_header = request.headers.get('Authorization')
+
+    userFound = None
+
+    for user in users:
+        if(user['token'] == authorization_header):
+            userFound = user
+
+    if not userFound:
+        return jsonify({ "error": "Usuário não encontrado" }), 403
+    
+    return jsonify({ "message": "Usuário Criado", "token": user['token'], "user": { "name": user['name']} }), 200
+
+
 @app.route('/register',methods= ['POST'])
 def user():
     data = request.get_json()
@@ -72,7 +88,7 @@ def user():
         'password': data['password']
     }
     
-    userToken = uuid4()
+    userToken = str(uuid4())
     user['token'] = userToken
     users.append(user)
 
