@@ -48,6 +48,9 @@ def upload_file():
 def inputLogin():
     data = request.get_json()
 
+    if not data['name'] or not data['password']:
+        return jsonify({ "error": "Nome e senha são obrigatórios" }), 400
+
     name = data['name']
     password = data['password']
 
@@ -83,10 +86,24 @@ def resumeLogin():
 @app.route('/register',methods= ['POST'])
 def user():
     data = request.get_json()
+    
+    if not data['name'] or not data['password']:
+        return jsonify({ "error": "Nome e senha são obrigatórios" }), 400
+    
     user = {
         'name': data['name'],
         'password': data['password']
     }
+
+    userAlreadyExists = False
+
+    for u in users:
+        if(u['name'] == user['name']):
+            userAlreadyExists = True
+            break
+
+    if userAlreadyExists:
+        return jsonify({ "message": "Usuário já existe" }), 400
     
     userToken = str(uuid4())
     user['token'] = userToken
