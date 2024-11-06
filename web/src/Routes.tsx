@@ -12,7 +12,7 @@ export default function RoutesComponents() {
     <Routes>
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/register" element={<RegisterScreen />} />
-      {user && <Route path="/" element={<App />} />}{" "}
+      {user && <Route path="/chat" element={<App />} />}{" "}
       <Route path="*" element={<Page404 />} />
     </Routes>
   );

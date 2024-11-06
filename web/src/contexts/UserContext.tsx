@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 interface IUser {
   name: string;
+  token: string;
 }
 
 interface IProps {
@@ -46,7 +47,7 @@ export const UserProvider = ({ children }: IProps) => {
       if (user && userToken) {
         setUser(user);
         localStorage.setItem("user-token", userToken);
-        navigate("/");
+        navigate("/chat");
       }
     } catch (error) {
       console.log(error);
@@ -72,7 +73,7 @@ export const UserProvider = ({ children }: IProps) => {
       if (user) {
         setUser(user);
         localStorage.setItem("user-token", user.token);
-        navigate("/");
+        navigate("/chat");
       }
     } catch (error) {
       console.log(error);

@@ -7,6 +7,7 @@ import useSocketIo from "./hooks/useSocketIo";
 import { FilePreview } from "./components/file-preview";
 import { IMessage } from "./types/IMessage";
 import { MessageBubble } from "./components/message-bubble";
+import useUser from "./hooks/useUser";
 
 interface SideBarOptions {
   id: number;
@@ -18,6 +19,8 @@ export default function App() {
   const { send, onMessage } = useSocketIo<IMessage>({
     url: "ws://localhost:5000",
   });
+
+  const { user } = useUser();
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -39,7 +42,7 @@ export default function App() {
     const newMessage: IMessage = {
       id: messages.length + 1,
       text: inputMessage,
-      sender: "You",
+      sender: user?.name || "",
       timestamp: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -144,6 +147,7 @@ export default function App() {
           {messages.map((message, index) => (
             <MessageBubble
               key={message.id}
+              currentUser={user?.name}
               message={message}
               {...(index === messages.length - 1
                 ? { elementRef: lastMessageRef }
