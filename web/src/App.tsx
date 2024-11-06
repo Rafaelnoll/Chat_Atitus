@@ -13,6 +13,7 @@ interface SideBarOptions {
   id: number;
   name: string;
   icon?: ReactNode;
+  onClick?: () => void;
 }
 
 export default function App() {
@@ -20,7 +21,7 @@ export default function App() {
     url: "ws://localhost:5000",
   });
 
-  const { user } = useUser();
+  const { user, logout } = useUser();
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -33,7 +34,7 @@ export default function App() {
 
   const sidebarOptions: SideBarOptions[] = [
     { id: 1, name: "Chat", icon: <MessageCircleMore size="18" /> },
-    { id: 2, name: "Deslogar", icon: <LogOut size="18" /> },
+    { id: 2, name: "Deslogar", icon: <LogOut size="18" />, onClick: logout },
   ];
 
   const handleSendMessage = async () => {
@@ -118,7 +119,7 @@ export default function App() {
                     ? "bg-indigo-700"
                     : "hover:bg-indigo-500"
                 }`}
-                onClick={() => setSidebarOptions(option.name)}
+                onClick={option.onClick || undefined}
               >
                 <span>{option.icon}</span> {option.name}
               </button>

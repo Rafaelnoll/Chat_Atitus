@@ -14,6 +14,7 @@ interface IContext {
   user: IUser | null;
   login: (name: string, password: string) => void;
   register: (name: string, password: string) => void;
+  logout: () => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -21,6 +22,7 @@ export const UserContext = createContext<IContext>({
   user: null,
   login: () => {},
   register: () => {},
+  logout: () => {},
 });
 
 export const UserProvider = ({ children }: IProps) => {
@@ -80,6 +82,16 @@ export const UserProvider = ({ children }: IProps) => {
     }
   }
 
+  function handleLogout() {
+    try {
+      setUser(null);
+      localStorage.removeItem("user-token");
+      navigate("/login");
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
     const tokenInLocalStorage = localStorage.getItem("user-token");
 
@@ -110,7 +122,12 @@ export const UserProvider = ({ children }: IProps) => {
 
   return (
     <UserContext.Provider
-      value={{ user, login: handleLogin, register: handleRegister }}
+      value={{
+        user,
+        login: handleLogin,
+        register: handleRegister,
+        logout: handleLogout,
+      }}
     >
       {children}
     </UserContext.Provider>

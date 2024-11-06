@@ -48,16 +48,16 @@ def upload_file():
 def inputLogin():
     data = request.get_json()
 
-    if not data['name'] or not data['password']:
-        return jsonify({ "error": "Nome e senha são obrigatórios" }), 400
-
     name = data['name']
     password = data['password']
+
+    if not name or not password:
+        return jsonify({ "error": "Nome e senha são obrigatórios" }), 400
 
     userFound = None
 
     for user in users:
-        if(user['name'] == name and user['password'] == password):
+        if(user and user['name'] == name and user['password'] == password):
             userFound = user
 
     if(userFound):
@@ -74,13 +74,13 @@ def resumeLogin():
     userFound = None
 
     for user in users:
-        if(user['token'] == authorization_header):
+        if(user and user['token'] == authorization_header):
             userFound = user
 
     if not userFound:
         return jsonify({ "error": "Usuário não encontrado" }), 403
     
-    return jsonify({ "message": "Usuário Criado", "token": user['token'], "user": { "name": user['name']} }), 200
+    return jsonify({ "message": "Usuário Criado", "token": user['token'], "user": { "name": user['name'], "token": user['token']} }), 200
 
 
 @app.route('/register',methods= ['POST'])
@@ -98,7 +98,7 @@ def user():
     userAlreadyExists = False
 
     for u in users:
-        if(u['name'] == user['name']):
+        if(u and u['name'] == user['name']):
             userAlreadyExists = True
             break
 
@@ -109,7 +109,7 @@ def user():
     user['token'] = userToken
     users.append(user)
 
-    return jsonify({ "message": "Usuário Criado", "token": userToken, "user": { "name": user['name']} }), 200
+    return jsonify({ "message": "Usuário Criado", "token": userToken,"user": { "name": user['name'], "token": user['token']}  }), 200
 
 @socketio.on('message')
 def handle_message(msg):
