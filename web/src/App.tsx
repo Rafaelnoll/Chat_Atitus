@@ -17,15 +17,14 @@ interface SideBarOptions {
 }
 
 export default function App() {
+  const { user, logout, defaultIp } = useUser();
   const { send, onMessage } = useSocketIo<IMessage>({
-    url: "ws://localhost:5000",
+    url: `ws://${defaultIp}:5000`,
   });
-
-  const { user, logout } = useUser();
 
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
-  const [sidebarOption, setSidebarOptions] = useState("Chat");
+  const [sidebarOption] = useState("Chat");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -54,7 +53,7 @@ export default function App() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch("http://localhost:5000/upload", {
+      const response = await fetch(`http://${defaultIp}:5000/upload`, {
         method: "POST",
         body: formData,
       });

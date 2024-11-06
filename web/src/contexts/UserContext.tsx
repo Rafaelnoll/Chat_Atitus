@@ -15,7 +15,10 @@ interface IContext {
   login: (name: string, password: string) => void;
   register: (name: string, password: string) => void;
   logout: () => void;
+  defaultIp: string;
 }
+
+const defaultIp = "localhost";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const UserContext = createContext<IContext>({
@@ -23,6 +26,7 @@ export const UserContext = createContext<IContext>({
   login: () => {},
   register: () => {},
   logout: () => {},
+  defaultIp: "",
 });
 
 export const UserProvider = ({ children }: IProps) => {
@@ -31,7 +35,7 @@ export const UserProvider = ({ children }: IProps) => {
 
   async function handleRegister(name: string, password: string) {
     try {
-      const response = await fetch("http://localhost:5000/register", {
+      const response = await fetch(`http://${defaultIp}:5000/register`, {
         method: "POST",
         body: JSON.stringify({
           name,
@@ -58,7 +62,7 @@ export const UserProvider = ({ children }: IProps) => {
 
   async function handleLogin(name: string, password: string) {
     try {
-      const response = await fetch("http://localhost:5000/login", {
+      const response = await fetch(`http://${defaultIp}:5000/login`, {
         method: "POST",
         body: JSON.stringify({
           name,
@@ -99,7 +103,7 @@ export const UserProvider = ({ children }: IProps) => {
       try {
         if (!tokenInLocalStorage) return;
 
-        const response = await fetch("http://localhost:5000/login/resume", {
+        const response = await fetch(`http://${defaultIp}:5000/login/resume`, {
           method: "GET",
           headers: {
             "content-type": "application/json",
@@ -127,6 +131,7 @@ export const UserProvider = ({ children }: IProps) => {
         login: handleLogin,
         register: handleRegister,
         logout: handleLogout,
+        defaultIp,
       }}
     >
       {children}
